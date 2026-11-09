@@ -2375,6 +2375,12 @@ void OrangePiReadAll(int model)
 			physNames =  physNames_4A;
 			alts = alts_a527;
 			break;
+		case PI_MODEL_ZERO_3_W_PRO:
+			printf (" +------+-----+----------+--------+---+ZERO3W PRO+---+--------+----------+-----+------+\n");
+			physToWpi = physToWpi_4_ULTRA;
+			physNames = physNames_4_ULTRA;
+			alts = alts_rk3588;
+			break;
 		case PI_MODEL_4_ULTRA:
 			printf (" +------+-----+----------+--------+---+OPI4-ULTRA+---+--------+----------+-----+------+\n");
 			physToWpi =  physToWpi_4_ULTRA;
@@ -2567,6 +2573,7 @@ void OrangePiReadAll(int model)
 		case PI_MODEL_RV:
 		case PI_MODEL_4A:
 		case PI_MODEL_4_PRO:
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 			for (pin = 1 ; pin <= 40; pin += 2)
 				readallPhys(pin);
@@ -2657,6 +2664,9 @@ void OrangePiReadAll(int model)
 			break;
 		case PI_MODEL_4A:
 			printf (" +------+-----+----------+--------+---+  OPI 4A  +---+--------+----------+-----+------+\n");
+			break;
+		case PI_MODEL_ZERO_3_W_PRO:
+			printf (" +------+-----+----------+--------+---+ZERO3W PRO+---+--------+----------+-----+------+\n");
 			break;
 		case PI_MODEL_4_ULTRA:
 			printf (" +------+-----+----------+--------+---+OPI4-ULTRA+---+--------+----------+-----+------+\n");

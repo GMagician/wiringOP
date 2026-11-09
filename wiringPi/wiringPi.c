@@ -293,6 +293,16 @@ static int ORANGEPI_PIN_MASK_4_ULTRA[5][32] =  //[BANK]	[INDEX]
 	{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1, 4, 5,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,},//GPIO4
 };
 
+/* Only the 28 GPIOs routed to the Zero 3W Pro GP40 header. */
+static int ORANGEPI_PIN_MASK_ZERO_3_W_PRO[5][32] =
+{
+	{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 6,-1,-1, 1, 2,-1, 4, 5,-1,-1,-1,-1,-1,-1, 4, 5,-1,-1,},//GPIO0
+	{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//GPIO1
+	{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 3,-1,-1,-1,-1, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7,},//GPIO2
+	{-1,-1, 2, 3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//GPIO3
+	{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 4, 5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//GPIO4
+};
+
 static int ORANGEPI_PIN_MASK_4_PRO[12][32] =  //[BANK]  [INDEX]
 {
 	{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PA
@@ -3088,6 +3098,7 @@ void piBoardId (int * model)
 	else if (strncmp(revision, "orangepizero2.",           14) == 0) { *model = PI_MODEL_ZERO_2; }
 	else if (strncmp(revision, "orangepizero2w.",          14) == 0) { *model = PI_MODEL_ZERO_2_W; }
 	else if (strncmp(revision, "orangepizero3.",           14) == 0) { *model = PI_MODEL_ZERO_2; }
+	else if (strncmp(revision, "orangepizero3wpro.",       18) == 0) { *model = PI_MODEL_ZERO_3_W_PRO; }
 	else if (strncmp(revision, "orangepizero3w.",          14) == 0) { *model = PI_MODEL_ZERO_3_W; }
 	else if (strncmp(revision, "orangepizero4.",           13) == 0) { *model = PI_MODEL_ZERO_4; }
 	else if (strncmp(revision, "orangepizero3plus.",       18) == 0) { *model = PI_MODEL_ZERO_3_PLUS; }
@@ -5486,6 +5497,12 @@ int wiringPiSetup (void)
 			physToGpio = physToGpio_4A;
 			ORANGEPI_PIN_MASK = ORANGEPI_PIN_MASK_4A;
 			break;
+		case PI_MODEL_ZERO_3_W_PRO:
+			/* GP40 numbering matches 4 Ultra; allowed GPIOs remain board-specific. */
+			pinToGpio = pinToGpio_4_ULTRA;
+			physToGpio = physToGpio_4_ULTRA;
+			ORANGEPI_PIN_MASK = ORANGEPI_PIN_MASK_ZERO_3_W_PRO;
+			break;
 		case PI_MODEL_4_ULTRA:
 			pinToGpio =  pinToGpio_4_ULTRA;
 			physToGpio = physToGpio_4_ULTRA;
@@ -5848,6 +5865,7 @@ int wiringPiSetup (void)
 
 			break;
 
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 
 			/* GPIO Register */
@@ -6177,6 +6195,10 @@ int wiringPiSetupSys (void)
 			pinToGpio =  pinToGpio_4A;
 			physToGpio = physToGpio_4A;
 			break;
+		case PI_MODEL_ZERO_3_W_PRO:
+			pinToGpio = pinToGpio_4_ULTRA;
+			physToGpio = physToGpio_4_ULTRA;
+			break;
 		case PI_MODEL_4_ULTRA:
 			pinToGpio =  pinToGpio_4_ULTRA;
 			physToGpio = physToGpio_4_ULTRA;
@@ -6381,6 +6403,7 @@ unsigned int readR(unsigned int addr)
 
 			break;
 
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 
 			mmap_base = (addr & (0xfffff000));
@@ -6694,6 +6717,7 @@ void writeR(unsigned int val, unsigned int addr)
 
 			break;
 
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 
 			mmap_base = (addr & (~0xfff));
@@ -6956,6 +6980,7 @@ int orangepi_get_gpio_mode(int pin)
 			}
 			break;
 
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 
 			rk3588_bus_ioc_phyaddr = RK3576_TOP_IOC_BASE + (0x20 * bank) + ((index >> 2) << 2);
@@ -6977,17 +7002,18 @@ int orangepi_get_gpio_mode(int pin)
 				ddr_phyaddr = RK3576_GPIO3_BASE + RK3576_GPIO_SWPORT_DDR_L_OFFSET + ((index / 16) << 2);
 			}
 			else if(bank == 4){
+				/* GPIO4_C/D mux registers live in VCCIO6/7, not TOP_IOC. */
+				if (index >= 24)
+					rk3588_bus_ioc_phyaddr = RK3576_VCCIO7_IOC_BASE + RK3576_GPIO4D_IOMUX_OFFSET + (((index - 24) >> 2) << 2);
+				else if (index >= 16)
+					rk3588_bus_ioc_phyaddr = RK3576_VCCIO6_IOC_BASE + RK3576_GPIO4C_IOMUX_OFFSET + (((index - 16) >> 2) << 2);
 				ddr_phyaddr = RK3576_GPIO4_BASE + RK3576_GPIO_SWPORT_DDR_L_OFFSET + ((index / 16) << 2);
 			}
 
 			if (ORANGEPI_PIN_MASK[bank][index] != -1) {
 
-				if ( bank == 0 ) {
+				if (bank == 0)
 					regval = readR(rk3588_pmu1_ioc_phyaddr);
-					mode = (regval >> ((index % 4) << 2)) & 0xf;
-					if(mode == 0x8)
-						regval = readR(rk3588_bus_ioc_phyaddr);
-				}
 				else
 					regval = readR(rk3588_bus_ioc_phyaddr);
 
@@ -7861,6 +7887,7 @@ int orangepi_set_gpio_mode(int pin, int mode)
 			}
 
 			break;
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 
 			rk3588_bus_ioc_phyaddr = RK3576_TOP_IOC_BASE + (0x20 * bank) + ((index >> 2) << 2);
@@ -7870,7 +7897,8 @@ int orangepi_set_gpio_mode(int pin, int mode)
 				else
 					rk3588_bus_ioc_phyaddr = RK3576_PMU0_IOC_BASE + (index >> 2 << 2);
 
-				printf("%#x\n", rk3588_bus_ioc_phyaddr);
+				if (wiringPiDebug)
+					printf("%#x\n", rk3588_bus_ioc_phyaddr);
 				ddr_phyaddr = RK3576_GPIO0_BASE + RK3576_GPIO_SWPORT_DDR_L_OFFSET + ((index / 16) << 2);
 				cru_phyaddr = RK3576_PMUCRU_GATE_CON07;
 				cru_val = 0xffff9fff;
@@ -7891,6 +7919,11 @@ int orangepi_set_gpio_mode(int pin, int mode)
 				cru_val = 0xffffffc0;
 			}
 			else if(bank == 4){
+				/* GPIO4_C/D mux registers live in VCCIO6/7, not TOP_IOC. */
+				if (index >= 24)
+					rk3588_bus_ioc_phyaddr = RK3576_VCCIO7_IOC_BASE + RK3576_GPIO4D_IOMUX_OFFSET + (((index - 24) >> 2) << 2);
+				else if (index >= 16)
+					rk3588_bus_ioc_phyaddr = RK3576_VCCIO6_IOC_BASE + RK3576_GPIO4C_IOMUX_OFFSET + (((index - 16) >> 2) << 2);
 				ddr_phyaddr = RK3576_GPIO4_BASE + RK3576_GPIO_SWPORT_DDR_L_OFFSET + ((index / 16) << 2);
 				cru_phyaddr = RK3576_CRU_GATE_CON18;
 				cru_val = 0xffffffc0;
@@ -9004,6 +9037,7 @@ int orangepi_digitalWrite(int pin, int value)
 
 			break;
 
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 
 			if(bank == 0){
@@ -9473,6 +9507,7 @@ int orangepi_digitalRead(int pin)
 
 			break;
 
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 
 			if(bank == 0)
@@ -9670,6 +9705,7 @@ void OrangePi_set_gpio_pullUpDnControl (int pin, int pud)
 
 			break;
 
+		case PI_MODEL_ZERO_3_W_PRO:
 		case PI_MODEL_4_ULTRA:
 			if(bank == 0 && index < 12)
 				phyaddr = RK3576_PMU0_IOC_BASE + RK3588_PMU1_IOC_GPIO0A_P + ((index >> 3) << 2);

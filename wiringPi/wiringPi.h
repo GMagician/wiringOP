@@ -462,13 +462,15 @@ typedef struct {
 #define RK3576_VCCIO_IOC_BASE                   0x26046000U
 #define RK3576_VCCIO6_IOC_BASE                  0x2604a000U
 #define RK3576_VCCIO7_IOC_BASE                  0x2604b000U
+#define RK3576_GPIO4C_IOMUX_OFFSET              0x390U
+#define RK3576_GPIO4D_IOMUX_OFFSET              0x398U
 
 #define RK3576_CRU_BASE                         0x27200000U
 #define RK3576_PMU1CRU_BASE                     0x27220000U
 
 //clock
 #define RK3576_CRU_GATE_CON18_OFFSET            0x848U
-#define RK3576_CRU_GATE_CON18                   (RK3566_CRU_BASE + 0x848U)
+#define RK3576_CRU_GATE_CON18                   (RK3576_CRU_BASE + RK3576_CRU_GATE_CON18_OFFSET)
 #define RK3576_PMUCRU_GATE_CON07_OFFSET         0x81CU
 #define RK3576_PMUCRU_GATE_CON07                (RK3576_PMU1CRU_BASE + 0x81CU)
 
@@ -942,6 +944,7 @@ extern int wiringPiDebug;
 
 /* Rockchip RK3576 */
 #define PI_MODEL_4_ULTRA         120
+#define PI_MODEL_ZERO_3_W_PRO     123
 
 extern const char *piModelNames    [16] ;
 
