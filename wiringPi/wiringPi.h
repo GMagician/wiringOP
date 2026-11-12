@@ -979,7 +979,7 @@ struct wiringPiNodeStruct
   int     pinMax ;
 
   int          fd ;	// Node specific
-  unsigned int data0 ;	//  ditto
+  unsigned long data0 ;	//  ditto (pointer-sized: pseudoPins stores a pointer here)
   unsigned int data1 ;	//  ditto
   unsigned int data2 ;	//  ditto
   unsigned int data3 ;	//  ditto

@@ -4188,7 +4188,7 @@ void orangepi_pwm_set_act(int pin, int act_cys)
 			a310b_gpio_info_t.pwm_ch3_pwh_phyaddr = (unsigned int)A310B_PWM_BASE + A310B_PWM_CH3_PWH_OFFSET;
 
 			pwm_period = readR(a310b_gpio_info_t.pwm_prd3_phyaddr);
-			if (act_cys >= pwm_period || act_cys < 0)
+			if (act_cys < 0 || (uint32_t)act_cys >= pwm_period)
 			{
 				printf("wiringop: error: value greater than period(%d)\n", pwm_period);
 				return;
@@ -4213,7 +4213,7 @@ void orangepi_pwm_set_act(int pin, int act_cys)
 			a310p_gpio_info_t.pwm_ch1_pwh_phyaddr = (unsigned int)A310P_PWM_BASE + A310P_PWM_CH1_PWH_OFFSET;
 
 			pwm_period = readR(a310p_gpio_info_t.pwm_prd1_phyaddr);
-			if (act_cys >= pwm_period || act_cys < 0)
+			if (act_cys < 0 || (uint32_t)act_cys >= pwm_period)
 			{
 				printf("wiringop: error: value greater than period(%d)\n", pwm_period);
 				return;
@@ -4391,7 +4391,7 @@ struct wiringPiNodeStruct *wiringPiNewNode (int pinBase, int numPins)
     if (wiringPiFindNode (pin) != NULL)
       (void)wiringPiFailure (WPI_FATAL, "wiringPiNewNode: Pin %d overlaps with existing definition\n", pin) ;
 
-  node = (struct wiringPiNodeStruct *)calloc (sizeof (struct wiringPiNodeStruct), 1) ;	// calloc zeros
+  node = (struct wiringPiNodeStruct *)calloc (1, sizeof (struct wiringPiNodeStruct)) ;	// calloc zeros
   if (node == NULL)
     (void)wiringPiFailure (WPI_FATAL, "wiringPiNewNode: Unable to allocate memory: %s\n", strerror (errno)) ;
 
@@ -7137,7 +7137,7 @@ int orangepi_get_gpio_mode(int pin)
                                         case 0:
                                                 gpio_dir_phyaddr = A310B_GPIO_BASE_GROUP0 + A310B_GPIO_DIRECTION_OFFSET;
 
-                                                if (index >= 0 && index <= 11)
+                                                if (index <= 11)
                                                         iomux_phyaddr = A310B_IOMUX_BASE_GROUP0 + 0x10 + index * 4;
                                                 else if (index >= 12 && index <= 19)
                                                         iomux_phyaddr = A310B_IOMUX_BASE_GROUP0 + 0xac + (index - 12) * 4;
@@ -7157,7 +7157,7 @@ int orangepi_get_gpio_mode(int pin)
                                         case 1:
 						gpio_dir_phyaddr = A310B_GPIO_BASE_GROUP1 + A310B_GPIO_DIRECTION_OFFSET;
 
-						if (index >= 0 && index <= 1)
+						if (index <= 1)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP1 + 0xcc + index * 4;
 						else if (index >= 2 && index <= 7)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP1 + 0xe4 + (index - 2) * 4;
@@ -7183,7 +7183,7 @@ int orangepi_get_gpio_mode(int pin)
                                         case 3:
                                                 gpio_dir_phyaddr = A310B_GPIO_BASE_GROUP3 + A310B_GPIO_DIRECTION_OFFSET;
 
-                                                if (index >= 0 && index <= 7)
+                                                if (index <= 7)
                                                         iomux_phyaddr = A310B_IOMUX_BASE_GROUP3 + index * 4;
 
                                                 iomux_val = 3;
@@ -7191,14 +7191,14 @@ int orangepi_get_gpio_mode(int pin)
                                         case 4:
                                                 gpio_dir_phyaddr = A310B_GPIO_BASE_GROUP4 + A310B_GPIO_DIRECTION_OFFSET;
 
-                                                if (index >= 0 && index <= 1)
+                                                if (index <= 1)
                                                         iomux_phyaddr = A310B_IOMUX_BASE_GROUP4 + 0xbc + index * 4;
                                                 else if (index >= 2 && index <= 22)
                                                         iomux_phyaddr = A310B_IOMUX_BASE_GROUP4 + 0x68 + (index - 2) * 4;
                                                 else if (index >= 23 && index <= 24)
                                                         iomux_phyaddr = A310B_IOMUX_BASE_GROUP4 + 0xc4 + (index - 23) * 4;
 
-                                                if (index >= 0 && index <= 1)
+                                                if (index <= 1)
                                                         iomux_val = 0;
                                                 else
                                                         iomux_val = 3;
@@ -7206,7 +7206,7 @@ int orangepi_get_gpio_mode(int pin)
                                         case 5:
                                                 gpio_dir_phyaddr = (unsigned int)A310B_GPIO_BASE_GROUP5 + A310B_GPIO_DIRECTION_OFFSET;
 
-                                                if (index >= 0 && index <= 19)
+                                                if (index <= 19)
                                                         iomux_phyaddr = A310B_IOMUX_BASE_GROUP5 + index * 4;
 
                                                 iomux_val = 3;
@@ -7256,7 +7256,7 @@ int orangepi_get_gpio_mode(int pin)
 						break;
 					case 1:
 						gpio_dir_phyaddr = A310P_GPIO_BASE_GROUP1 + A310P_GPIO_DIRECTION_OFFSET;
-						if (index >= 0 && index <= 20){
+						if (index <= 20){
 							iomux_phyaddr = A310P_IOMUX_BASE_GROUP1 + 0x80 + index * 4;
 							iomux_val = 1;}
 						else if (index >= 21 && index <= 27){
@@ -8486,7 +8486,7 @@ int orangepi_set_gpio_mode(int pin, int mode)
 					case 0:
 						gpio_dir_phyaddr = A310B_GPIO_BASE_GROUP0 + A310B_GPIO_DIRECTION_OFFSET;
 
-						if (index >= 0 && index <= 11)
+						if (index <= 11)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP0 + 0x10 + index * 4;
 						else if (index >= 12 && index <= 19)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP0 + 0xac + (index - 12) * 4;
@@ -8506,7 +8506,7 @@ int orangepi_set_gpio_mode(int pin, int mode)
 					case 1:
 						gpio_dir_phyaddr = A310B_GPIO_BASE_GROUP1 + A310B_GPIO_DIRECTION_OFFSET;
 
-						if (index >= 0 && index <= 1)
+						if (index <= 1)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP1 + 0xcc + index * 4;
 						else if (index >= 2 && index <= 7)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP1 + 0xe4 + (index - 2) * 4;
@@ -8518,7 +8518,7 @@ int orangepi_set_gpio_mode(int pin, int mode)
 						else
 							iomux_val = 3;
 
-						if( (index >= 0 && index <=1) && PWM_OUTPUT == mode )
+						if( (index <=1) && PWM_OUTPUT == mode )
 							iomux_val = 0;
 
 						break;
@@ -8536,7 +8536,7 @@ int orangepi_set_gpio_mode(int pin, int mode)
 					case 3:
 						gpio_dir_phyaddr = A310B_GPIO_BASE_GROUP3 + A310B_GPIO_DIRECTION_OFFSET;
 
-						if (index >= 0 && index <= 7)
+						if (index <= 7)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP3 + index * 4;
 
 						iomux_val = 3;
@@ -8545,14 +8545,14 @@ int orangepi_set_gpio_mode(int pin, int mode)
 					case 4:
 						gpio_dir_phyaddr = A310B_GPIO_BASE_GROUP4 + A310B_GPIO_DIRECTION_OFFSET;
 
-						if (index >= 0 && index <= 1)
+						if (index <= 1)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP4 + 0xbc + index * 4;
 						else if (index >= 2 && index <= 22)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP4 + 0x68 + (index - 2) * 4;
 						else if (index >= 23 && index <= 24)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP4 + 0xc4 + (index - 23) * 4;
 
-						if (index >= 0 && index <= 1)
+						if (index <= 1)
 							iomux_val = 0;
 						else
 							iomux_val = 3;
@@ -8561,7 +8561,7 @@ int orangepi_set_gpio_mode(int pin, int mode)
 					case 5:
 						gpio_dir_phyaddr = (unsigned int)A310B_GPIO_BASE_GROUP5 + A310B_GPIO_DIRECTION_OFFSET;
 
-						if (index >= 0 && index <= 19)
+						if (index <= 19)
 							iomux_phyaddr = A310B_IOMUX_BASE_GROUP5 + index * 4;
 
 						iomux_val = 3;
@@ -8657,7 +8657,7 @@ int orangepi_set_gpio_mode(int pin, int mode)
 						break;
 					case 1:
 						gpio_dir_phyaddr = A310P_GPIO_BASE_GROUP1 + A310P_GPIO_DIRECTION_OFFSET;
-						if (index >= 0 && index <= 20){
+						if (index <= 20){
 							iomux_phyaddr = A310P_IOMUX_BASE_GROUP1 + 0x80 + index * 4;
 							iomux_val = 1;}
 						else if (index >= 21 && index <= 27){
